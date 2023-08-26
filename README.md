@@ -19,3 +19,7 @@ threadpool.foreach(&mut data, |x| {
 
 assert!(data.iter().enumerate().all(|(i, x)| *x == i + 10));
 ```
+
+## Is this library safe and sound?
+
+Um, probably? Thread-safe atomics, channels, and barriers are used to handle all synchronization and the included tests run and pass. However, I don't have a rigorous proof that it is guaranteed to be memory safe, and part of the implementation relies on `std::mem::transmute` to cast away the lifetime bound on the closure being passed to other threads. This is a known-workaround for writing threading primitives as mentioned in item 3 of https://github.com/rust-lang/rust/pull/55043. The use of a shared one-off barrier inside of `foreach` serves to ensure that all threads have finished using and dropped the closure before `foreach` returns.
