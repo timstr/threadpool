@@ -6,6 +6,10 @@ fn test_threadpool_one_thread() {
 
     let mut threadpool = ThreadPool::new(1);
 
+    let new_data = threadpool.map(&data, |x| *x + *x);
+
+    assert!(new_data.iter().enumerate().all(|(i, x)| *x == 2 * i));
+
     threadpool.foreach(&mut data, |x| *x = *x + *x);
 
     assert!(data.iter().enumerate().all(|(i, x)| *x == 2 * i));
@@ -17,6 +21,10 @@ fn test_threadpool_two_threads() {
 
     let mut threadpool = ThreadPool::new(2);
 
+    let new_data = threadpool.map(&data, |x| *x + *x);
+
+    assert!(new_data.iter().enumerate().all(|(i, x)| *x == 2 * i));
+
     threadpool.foreach(&mut data, |x| *x = *x + *x);
 
     assert!(data.iter().enumerate().all(|(i, x)| *x == 2 * i));
@@ -26,9 +34,11 @@ fn test_threadpool_two_threads() {
 fn test_threadpool_all_threads() {
     let mut data: Vec<usize> = (0..65536).collect();
 
-    let num_threads = std::thread::available_parallelism().unwrap();
+    let mut threadpool = ThreadPool::new_max_parallelism();
 
-    let mut threadpool = ThreadPool::new(num_threads.get());
+    let new_data = threadpool.map(&data, |x| *x + *x);
+
+    assert!(new_data.iter().enumerate().all(|(i, x)| *x == 2 * i));
 
     threadpool.foreach(&mut data, |x| *x = *x + *x);
 
@@ -42,6 +52,10 @@ fn test_threadpool_borrowing() {
     let mut threadpool = ThreadPool::new(1);
 
     let offset: usize = 10;
+
+    let new_data = threadpool.map(&data, |x| *x + offset);
+
+    assert!(new_data.iter().enumerate().all(|(i, x)| *x == i + offset));
 
     threadpool.foreach(&mut data, |x| *x = *x + offset);
 
